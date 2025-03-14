@@ -340,12 +340,32 @@
       }
     }
 
+    function editAnnouncement(index) {
+      const newMessage = prompt("Edit announcement:", announcements[index].message);
+      if (newMessage) {
+        announcements[index].message = newMessage;
+        announcements[index].timestamp = new Date().toISOString(); // Update timestamp
+        renderAnnouncements();
+        saveData();
+      }
+    }
+
+    function deleteAnnouncement(index) {
+      if (confirm("Are you sure you want to delete this announcement?")) {
+        announcements.splice(index, 1);
+        renderAnnouncements();
+        saveData();
+      }
+    }
+
     function renderAnnouncements() {
       const announcementsList = document.getElementById('announcementsList');
-      announcementsList.innerHTML = announcements.map(announcement => `
+      announcementsList.innerHTML = announcements.map((announcement, index) => `
         <div class="announcement">
           <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
           ${announcement.message}
+          <button class="edit-btn" onclick="editAnnouncement(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteAnnouncement(${index})">Delete</button>
         </div>
       `).join('');
     }
