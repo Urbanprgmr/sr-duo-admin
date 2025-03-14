@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SR Openhouse Duo BR Tournament Manager</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1a1a1a;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      background-image: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      color: #ff4757;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    h2 {
+      color: #00b894;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      margin-bottom: 10px;
+    }
+    .section {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    input, button, textarea {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      width: 100%;
+    }
+    button {
+      background-color: #00b894;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #00cec9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+    th {
+      background-color: #00b894;
+      color: #fff;
+    }
+    tr:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    button.delete {
+      background-color: #ff4757;
+    }
+    button.delete:hover {
+      background-color: #ff6b81;
+    }
+  </style>
+</head>
+<body>
+  <h1>SR Openhouse Duo BR Tournament Manager</h1>
+
+  <!-- Clear Data -->
+  <div class="section">
+    <h2>Clear Data</h2>
+    <button onclick="clearData()">Clear All Data</button>
+  </div>
+
+  <!-- Team Management -->
+  <div class="section">
+    <h2>Team Management</h2>
+    <input id="teamName" placeholder="Team Name">
+    <input id="player1" placeholder="Player 1">
+    <input id="player2" placeholder="Player 2">
+    <button onclick="addTeam()">Add Team</button>
+    <table id="teamsTable">
+      <thead>
+        <tr>
+          <th>Team Name</th>
+          <th>Player 1</th>
+          <th>Player 2</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Tournament League Management -->
+  <div class="section">
+    <h2>Tournament League Management</h2>
+    <label for="totalMatches">Total Matches in League:</label>
+    <input type="number" id="totalMatches" placeholder="Total Matches">
+    <label for="teamsToQualify">Teams to Qualify for Final Rounds:</label>
+    <input type="number" id="teamsToQualify" placeholder="Teams to Qualify">
+    <button onclick="saveLeagueSettings()">Save League Settings</button>
+    <div id="leagueStatus" style="margin-top: 10px;"></div>
+  </div>
+
+  <!-- Match Schedule -->
+  <div class="section">
+    <h2>Match Schedule</h2>
+    <input id="matchNameSchedule" placeholder="Match Name">
+    <input id="matchTimeIST" placeholder="Match Time (IST)">
+    <input id="matchTimeMVT" placeholder="Match Time (MVT)">
+    <button onclick="addMatchSchedule()">Add Match Schedule</button>
+    <table id="matchScheduleTable">
+      <thead>
+        <tr>
+          <th>Match Name</th>
+          <th>Time (IST)</th>
+          <th>Time (MVT)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Rules Section -->
+  <div class="section">
+    <h2>Tournament Rules</h2>
+    <textarea id="rules" placeholder="Enter tournament rules..." rows="5"></textarea>
+    <button onclick="saveRules()">Save Rules</button>
+  </div>
+
+  <!-- Match Management -->
+  <div class="section">
+    <h2>Match Management</h2>
+    <input id="matchName" placeholder="Match Name">
+    <button onclick="openTeamSelection()">Select Teams</button>
+    <button onclick="createMatch()">Create Match</button>
+    <div id="selectedTeams" style="margin-top: 10px;"></div>
+    <table id="matchesTable">
+      <thead>
+        <tr>
+          <th>Match Name</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Team Selection Modal -->
+  <div id="teamSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
+    <div style="background-color: #333; padding: 20px; border-radius: 10px; width: 300px;">
+      <h2>Select Teams</h2>
+      <div id="teamSelectionList"></div>
+      <button onclick="closeTeamSelection()">Close</button>
+    </div>
+  </div>
+
+  <!-- Set Points for Positions and Kills -->
+  <div class="section">
+    <h2>Set Points</h2>
+    <label for="pointsPerKill">Points per Kill:</label>
+    <input type="number" id="pointsPerKill" value="1">
+    <label for="pointsForPositions">Points for Positions (comma-separated, 1st to last):</label>
+    <input type="text" id="pointsForPositions" value="10,9,8,7,6,5,4,3,2,1">
+    <button onclick="savePoints()">Save Points</button>
+  </div>
+
+  <!-- Enter Match Results -->
+  <div class="section" id="matchResultsSection" style="display: none;">
+    <h2>Enter Match Results</h2>
+    <div id="matchResultsForm"></div>
+    <button onclick="saveMatchResults()">Save Results</button>
+  </div>
+
+  <!-- Match Results -->
+  <div class="section">
+    <h2>Match Results</h2>
+    <div id="matchResultsDisplay"></div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="section">
+    <h2>Leaderboard</h2>
+    <table id="leaderboardTable">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Team Name</th>
+          <th>Total Points</th>
+          <th>Qualified</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    // JSONBin.io Configuration
+    const jsonBinApiKey = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK'; // Replace with your new JSONBin.io API key
+    const jsonBinId = '67d376648561e97a50eb8663'; // Replace with your new JSONBin.io bin ID
+    const jsonBinUrl = `https://api.jsonbin.io/v3/b/${jsonBinId}`;
+
+    // Data Storage
+    let tournamentData = {
+      teams: [],
+      matches: [],
+      pointsPerKill: 1,
+      pointsForPositions: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+      totalMatches: 0,
+      teamsToQualify: 0,
+      matchSchedule: [],
+      rules: '',
+    };
+
+    // Fetch Data from JSONBin.io
+    async function fetchData() {
+      try {
+        const response = await fetch(jsonBinUrl, {
+          headers: { 'X-Master-Key': jsonBinApiKey },
+        });
+        const data = await response.json();
+        if (data.record) {
+          tournamentData = data.record;
+          console.log('Fetched Data:', tournamentData); // Debugging
+          renderAll();
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Save Data to JSONBin.io
+    async function saveData() {
+      try {
+        await fetch(jsonBinUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': jsonBinApiKey,
+          },
+          body: JSON.stringify(tournamentData),
+        });
+        console.log('Data saved successfully!');
+      } catch (error) {
+        console.error('Error saving data:', error);
+      }
+    }
+
+    // Add Team
+    function addTeam() {
+      const teamName = document.getElementById('teamName').value;
+      const player1 = document.getElementById('player1').value;
+      const player2 = document.getElementById('player2').value;
+      if (teamName && player1 && player2) {
+        tournamentData.teams.push({ teamName, player1, player2, totalPoints: 0 });
+        saveData();
+        renderTeams();
+        renderLeaderboard();
+      } else {
+        alert('Please fill all fields to add a team.');
+      }
+    }
+
+    // Save League Settings
+    function saveLeagueSettings() {
+      const totalMatches = parseInt(document.getElementById('totalMatches').value);
+      const teamsToQualify = parseInt(document.getElementById('teamsToQualify').value);
+      if (!isNaN(totalMatches)) tournamentData.totalMatches = totalMatches;
+      if (!isNaN(teamsToQualify)) tournamentData.teamsToQualify = teamsToQualify;
+      saveData();
+      checkLeagueStatus();
+    }
+
+    // Add Match Schedule
+    function addMatchSchedule() {
+      const matchName = document.getElementById('matchNameSchedule').value;
+      const matchTimeIST = document.getElementById('matchTimeIST').value;
+      const matchTimeMVT = document.getElementById('matchTimeMVT').value;
+      if (matchName && matchTimeIST && matchTimeMVT) {
+        tournamentData.matchSchedule.push({ matchName, matchTimeIST, matchTimeMVT });
+        saveData();
+        renderMatchSchedule();
+      } else {
+        alert('Please fill all fields to add a match schedule.');
+      }
+    }
+
+    // Save Rules
+    function saveRules() {
+      tournamentData.rules = document.getElementById('rules').value;
+      saveData();
+    }
+
+    // Render All Data
+    function renderAll() {
+      renderTeams();
+      renderMatches();
+      renderMatchResults();
+      renderLeaderboard();
+      renderMatchSchedule();
+      checkLeagueStatus();
+    }
+
+    // Initial Fetch
+    fetchData();
+  </script>
+</body>
+</html>
