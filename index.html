@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background: url('https://i.imgur.com/3QZQZQZ.jpg') no-repeat center center fixed;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       margin: 0;
@@ -112,6 +112,7 @@
       <h2>Tournament Rules</h2>
       <textarea id="tournamentRules" placeholder="Enter tournament rules here..."></textarea>
       <button onclick="saveRules()">Save Rules</button>
+      <div id="rulesDisplay"></div>
     </div>
     <div class="points-settings">
       <h2>Points Settings</h2>
@@ -123,6 +124,7 @@
     </div>
     <div>
       <h2>Create Match</h2>
+      <input type="text" id="matchName" placeholder="Enter Match Name (e.g., Match 1)">
       <select id="matchTeams" multiple>
         <option value="all">Select All Teams</option>
       </select>
@@ -156,6 +158,7 @@
       renderTeams();
       renderMatches();
       renderTeamOptions();
+      renderRules();
     }
 
     async function saveData() {
@@ -176,7 +179,7 @@
           const playerName = prompt(`Enter name for Player ${i}:`);
           players.push(playerName || `Player ${i}`);
         }
-        teams.push({ name: teamName, players, kills: 0, totalPoints: 0 });
+        teams.push({ name: teamName, players, kills: 0, totalPoints: 0, rankPoints: 0, killPoints: 0 });
         renderTeams();
         renderTeamOptions();
         saveData();
@@ -187,7 +190,7 @@
       const teamsDiv = document.getElementById('teams');
       teamsDiv.innerHTML = teams.map((team, index) => `
         <div class="team">
-          <strong>${team.name}</strong> - Kills: ${team.kills}, Points: ${team.totalPoints}
+          <strong>${team.name}</strong> - Total Points: ${team.totalPoints} (Rank Points: ${team.rankPoints}, Kill Points: ${team.killPoints})
           <table>
             <thead>
               <tr>
@@ -217,12 +220,13 @@
     }
 
     function createMatch() {
+      const matchName = document.getElementById('matchName').value;
       const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
         .map(option => option.value);
       const matchTime = document.getElementById('matchTime').value;
-      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime) {
+      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime && matchName) {
         const teamsInMatch = selectedTeams.includes('all') ? teams.map(team => team.name) : selectedTeams;
-        matches.push({ teams: teamsInMatch, time: matchTime, result: null });
+        matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null });
         renderMatches();
         saveData();
       }
@@ -251,18 +255,22 @@
     function updateLeaderboard() {
       for (const team of teams) {
         team.totalPoints = 0;
+        team.rankPoints = 0;
+        team.killPoints = 0;
         team.kills = 0;
       }
       for (const match of matches) {
         if (match.result) {
           for (const [teamName, position] of Object.entries(match.result.positions)) {
             const team = teams.find(t => t.name === teamName);
+            team.rankPoints += pointsPerPosition[position - 1] || 0;
             team.totalPoints += pointsPerPosition[position - 1] || 0;
           }
           for (const [teamName, teamKills] of Object.entries(match.result.kills)) {
             const team = teams.find(t => t.name === teamName);
             for (const [player, playerKills] of Object.entries(teamKills)) {
               team.kills += playerKills;
+              team.killPoints += playerKills * pointsPerKill;
               team.totalPoints += playerKills * pointsPerKill;
             }
           }
@@ -274,6 +282,7 @@
       const matchesDiv = document.getElementById('matches');
       matchesDiv.innerHTML = matches.map((match, index) => `
         <div class="match">
+          <strong>Match Name:</strong> ${match.name}<br>
           <strong>Teams:</strong> ${match.teams.join(', ')}<br>
           <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
           ${match.result ? `
@@ -308,6 +317,11 @@
         renderMatches();
         saveData();
       }
+    }
+
+    function renderRules() {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      rulesDisplay.innerHTML = `<div class="rule"><strong>Tournament Rules:</strong><br>${rules}</div>`;
     }
 
     fetchData();
