@@ -43,7 +43,7 @@
     button:hover {
       background: #e64a19;
     }
-    .teams, .matches, .rules, .points-settings, .filters {
+    .teams, .matches, .rules, .points-settings {
       margin-top: 20px;
     }
     .team, .match, .rule, .points-setting {
@@ -53,7 +53,7 @@
       border-radius: 5px;
       position: relative;
     }
-    .edit-btn, .delete-btn, .end-match-btn, .export-btn {
+    .edit-btn, .delete-btn, .end-match-btn {
       position: absolute;
       top: 10px;
       right: 10px;
@@ -80,23 +80,8 @@
     .end-match-btn:hover {
       background: #1976D2;
     }
-    .export-btn {
-      background: #9C27B0;
-      right: 220px;
-    }
-    .export-btn:hover {
-      background: #7B1FA2;
-    }
-    .player-stats {
-      margin-top: 10px;
-    }
-    .player-stat {
-      display: flex;
-      justify-content: space-between;
-      padding: 5px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 5px;
-      margin: 5px 0;
+    select[multiple] {
+      height: 150px;
     }
   </style>
 </head>
@@ -123,26 +108,15 @@
       <input type="text" id="pointsPerPosition" placeholder="e.g., 100,80,60,40,20">
       <button onclick="savePointsSettings()">Save Points Settings</button>
     </div>
-    <div class="filters">
-      <h2>Match Filters</h2>
-      <select id="matchFilter" onchange="filterMatches()">
-        <option value="all">All Matches</option>
-        <option value="upcoming">Upcoming Matches</option>
-        <option value="ongoing">Ongoing Matches</option>
-        <option value="ended">Ended Matches</option>
-      </select>
-    </div>
     <div>
-      <h2>Match Schedule</h2>
-      <select id="team1"></select>
-      <select id="team2"></select>
+      <h2>Create Match</h2>
+      <select id="matchTeams" multiple>
+        <option value="all">Select All Teams</option>
+      </select>
       <input type="datetime-local" id="matchTime">
       <button onclick="createMatch()">Create Match</button>
     </div>
     <div class="matches" id="matches"></div>
-    <div>
-      <button class="export-btn" onclick="exportData()">Export Data</button>
-    </div>
   </div>
   <script>
     const JSONBIN_API_KEY = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK';
@@ -168,6 +142,7 @@
       document.getElementById('pointsPerPosition').value = pointsPerPosition.join(',');
       renderTeams();
       renderMatches();
+      renderTeamOptions();
     }
 
     async function saveData() {
@@ -190,52 +165,36 @@
         }
         teams.push({ name: teamName, players, kills: 0, totalPoints: 0 });
         renderTeams();
+        renderTeamOptions();
         saveData();
       }
     }
 
-    function editTeam(index) {
-      const team = teams[index];
-      const newName = prompt("Enter new team name:", team.name);
-      const newPlayerCount = prompt("Enter new number of players (1-5):", team.players.length);
-      if (newName && newPlayerCount >= 1 && newPlayerCount <= 5) {
-        const players = [];
-        for (let i = 1; i <= newPlayerCount; i++) {
-          const playerName = prompt(`Enter name for Player ${i}:`, team.players[i - 1] || `Player ${i}`);
-          players.push(playerName || `Player ${i}`);
-        }
-        team.name = newName;
-        team.players = players;
-        renderTeams();
-        saveData();
-      }
+    function renderTeams() {
+      const teamsDiv = document.getElementById('teams');
+      teamsDiv.innerHTML = teams.map((team, index) => `
+        <div class="team">
+          <strong>${team.name}</strong> - Kills: ${team.kills}, Points: ${team.totalPoints}
+          ${team.players.map((player, i) => `<div>Player ${i + 1}: ${player}</div>`).join('')}
+          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
+        </div>
+      `).join('');
     }
 
-    function deleteTeam(index) {
-      if (confirm("Are you sure you want to delete this team?")) {
-        teams.splice(index, 1);
-        renderTeams();
-        saveData();
-      }
-    }
-
-    function saveRules() {
-      rules = document.getElementById('tournamentRules').value;
-      saveData();
-    }
-
-    function savePointsSettings() {
-      pointsPerKill = parseInt(document.getElementById('pointsPerKill').value);
-      pointsPerPosition = document.getElementById('pointsPerPosition').value.split(',').map(Number);
-      saveData();
+    function renderTeamOptions() {
+      const matchTeamsSelect = document.getElementById('matchTeams');
+      matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
+        teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
     }
 
     function createMatch() {
-      const team1 = document.getElementById('team1').value;
-      const team2 = document.getElementById('team2').value;
+      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
+        .map(option => option.value);
       const matchTime = document.getElementById('matchTime').value;
-      if (team1 && team2 && matchTime) {
-        matches.push({ team1, team2, time: matchTime, result: null });
+      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime) {
+        const teamsInMatch = selectedTeams.includes('all') ? teams.map(team => team.name) : selectedTeams;
+        matches.push({ teams: teamsInMatch, time: matchTime, result: null });
         renderMatches();
         saveData();
       }
@@ -245,15 +204,15 @@
       const match = matches[index];
       const positions = {};
       const kills = {};
-      for (const team of [match.team1, match.team2]) {
-        const position = parseInt(prompt(`Enter position for ${team}:`));
-        positions[team] = position;
+      for (const teamName of match.teams) {
+        const position = parseInt(prompt(`Enter position for ${teamName}:`));
+        positions[teamName] = position;
         const teamKills = {};
-        for (const player of teams.find(t => t.name === team).players) {
-          const playerKills = parseInt(prompt(`Enter kills for ${player} (${team}):`));
+        for (const player of teams.find(t => t.name === teamName).players) {
+          const playerKills = parseInt(prompt(`Enter kills for ${player} (${teamName}):`));
           teamKills[player] = playerKills;
         }
-        kills[team] = teamKills;
+        kills[teamName] = teamKills;
       }
       match.result = { positions, kills };
       updateLeaderboard();
@@ -283,18 +242,20 @@
       }
     }
 
-    function editMatch(index) {
-      const match = matches[index];
-      const newTeam1 = prompt("Enter new Team 1:", match.team1);
-      const newTeam2 = prompt("Enter new Team 2:", match.team2);
-      const newTime = prompt("Enter new match time (YYYY-MM-DDTHH:MM):", match.time);
-      if (newTeam1 && newTeam2 && newTime) {
-        match.team1 = newTeam1;
-        match.team2 = newTeam2;
-        match.time = newTime;
-        renderMatches();
-        saveData();
-      }
+    function renderMatches() {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = matches.map((match, index) => `
+        <div class="match">
+          <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+          <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
+          ${match.result ? `
+            <div>Positions: ${JSON.stringify(match.result.positions)}</div>
+            <div>Kills: ${JSON.stringify(match.result.kills)}</div>
+          ` : ''}
+          <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+          <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+        </div>
+      `).join('');
     }
 
     function deleteMatch(index) {
@@ -303,67 +264,6 @@
         renderMatches();
         saveData();
       }
-    }
-
-    function filterMatches() {
-      const filter = document.getElementById('matchFilter').value;
-      const filteredMatches = matches.filter(match => {
-        if (filter === 'upcoming') return !match.result;
-        if (filter === 'ongoing') return !match.result && new Date(match.time) <= new Date();
-        if (filter === 'ended') return match.result;
-        return true;
-      });
-      renderMatches(filteredMatches);
-    }
-
-    function exportData() {
-      const data = { teams, matches, rules, pointsPerKill, pointsPerPosition };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'tournament-data.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function renderTeams() {
-      const teamsDiv = document.getElementById('teams');
-      teamsDiv.innerHTML = teams.map((team, index) => `
-        <div class="team">
-          <strong>${team.name}</strong> - Kills: ${team.kills}, Points: ${team.totalPoints}
-          <div class="player-stats">
-            ${team.players.map((player, i) => `
-              <div class="player-stat">
-                <span>Player ${i + 1}: ${player}</span>
-                <span>Kills: ${team.kills}</span>
-              </div>
-            `).join('')}
-          </div>
-          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
-          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
-        </div>
-      `).join('');
-    }
-
-    function renderMatches(filteredMatches = matches) {
-      const team1Select = document.getElementById('team1');
-      const team2Select = document.getElementById('team2');
-      team1Select.innerHTML = teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
-      team2Select.innerHTML = teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
-      const matchesDiv = document.getElementById('matches');
-      matchesDiv.innerHTML = filteredMatches.map((match, index) => `
-        <div class="match">
-          <strong>${match.team1}</strong> vs <strong>${match.team2}</strong> at ${new Date(match.time).toLocaleString()}
-          ${match.result ? `
-            <div>Positions: ${JSON.stringify(match.result.positions)}</div>
-            <div>Kills: ${JSON.stringify(match.result.kills)}</div>
-          ` : ''}
-          <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
-          <button class="edit-btn" onclick="editMatch(${index})">Edit</button>
-          <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
-        </div>
-      `).join('');
     }
 
     fetchData();
