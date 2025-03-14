@@ -43,10 +43,10 @@
     button:hover {
       background: #e64a19;
     }
-    .teams, .matches, .rules, .points-settings {
+    .teams, .matches, .rules, .points-settings, .announcements {
       margin-top: 20px;
     }
-    .team, .match, .rule, .points-setting {
+    .team, .match, .rule, .points-setting, .announcement {
       background: rgba(255, 255, 255, 0.1);
       padding: 10px;
       margin: 10px 0;
@@ -112,7 +112,6 @@
       <h2>Tournament Rules</h2>
       <textarea id="tournamentRules" placeholder="Enter tournament rules here..."></textarea>
       <button onclick="saveRules()">Save Rules</button>
-      <div id="rulesDisplay"></div>
     </div>
     <div class="points-settings">
       <h2>Points Settings</h2>
@@ -132,6 +131,12 @@
       <button onclick="createMatch()">Create Match</button>
     </div>
     <div class="matches" id="matches"></div>
+    <div class="announcements">
+      <h2>Announcements</h2>
+      <textarea id="announcementMessage" placeholder="Enter announcement..."></textarea>
+      <button onclick="addAnnouncement()">Add Announcement</button>
+      <div id="announcementsList"></div>
+    </div>
   </div>
   <script>
     const JSONBIN_API_KEY = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK';
@@ -141,6 +146,7 @@
     let rules = '';
     let pointsPerKill = 10;
     let pointsPerPosition = [100, 80, 60, 40, 20];
+    let announcements = [];
 
     async function fetchData() {
       const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -152,17 +158,18 @@
       rules = data.record.rules || '';
       pointsPerKill = data.record.pointsPerKill || 10;
       pointsPerPosition = data.record.pointsPerPosition || [100, 80, 60, 40, 20];
+      announcements = data.record.announcements || [];
       document.getElementById('tournamentRules').value = rules;
       document.getElementById('pointsPerKill').value = pointsPerKill;
       document.getElementById('pointsPerPosition').value = pointsPerPosition.join(',');
       renderTeams();
       renderMatches();
       renderTeamOptions();
-      renderRules();
+      renderAnnouncements();
     }
 
     async function saveData() {
-      const data = { teams, matches, rules, pointsPerKill, pointsPerPosition };
+      const data = { teams, matches, rules, pointsPerKill, pointsPerPosition, announcements };
       await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
@@ -276,6 +283,9 @@
           }
         }
       }
+      // Update ranks
+      const sortedTeams = teams.sort((a, b) => b.totalPoints - a.totalPoints);
+      sortedTeams.forEach((team, index) => team.rank = index + 1);
     }
 
     function renderMatches() {
@@ -319,9 +329,25 @@
       }
     }
 
-    function renderRules() {
-      const rulesDisplay = document.getElementById('rulesDisplay');
-      rulesDisplay.innerHTML = `<div class="rule"><strong>Tournament Rules:</strong><br>${rules}</div>`;
+    function addAnnouncement() {
+      const message = document.getElementById('announcementMessage').value;
+      if (message) {
+        const timestamp = new Date().toISOString();
+        announcements.push({ message, timestamp });
+        renderAnnouncements();
+        saveData();
+        document.getElementById('announcementMessage').value = ''; // Clear the input field
+      }
+    }
+
+    function renderAnnouncements() {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = announcements.map(announcement => `
+        <div class="announcement">
+          <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+          ${announcement.message}
+        </div>
+      `).join('');
     }
 
     fetchData();
