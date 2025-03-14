@@ -3,53 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tournament Setup</title>
+  <title>Tournament Manager</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #1e1e1e; color: #fff; }
-    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    input, select, button { padding: 10px; margin: 5px; border: none; border-radius: 5px; }
-    button { background: #4CAF50; color: white; cursor: pointer; }
-    button:hover { background: #45a049; }
-    .teams, .leaderboard { margin-top: 20px; }
-    .team { background: #333; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      color: #ffcc00;
+      text-shadow: 2px 2px 4px #000;
+    }
+    input, select, button, textarea {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button {
+      background: #ff5722;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #e64a19;
+    }
+    .teams, .matches, .rules {
+      margin-top: 20px;
+    }
+    .team, .match, .rule {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      position: relative;
+    }
+    .edit-btn, .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+    }
+    .edit-btn {
+      background: #4CAF50;
+      right: 80px;
+    }
+    .edit-btn:hover {
+      background: #45a049;
+    }
+    .delete-btn {
+      background: #f44336;
+    }
+    .delete-btn:hover {
+      background: #d32f2f;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Tournament Setup</h1>
+    <h1>Tournament Manager</h1>
     <div>
       <input type="text" id="teamName" placeholder="Enter Team Name">
       <input type="number" id="playerCount" placeholder="Number of Players (1-5)" min="1" max="5">
       <button onclick="addTeam()">Add Team</button>
     </div>
     <div class="teams" id="teams"></div>
-    <div>
-      <h2>League Rules</h2>
-      <label>Round 1: Top </label>
-      <input type="number" id="round1" placeholder="1-20" min="1" max="20">
-      <label> teams qualify</label><br>
-      <label>Round 2: Top </label>
-      <input type="number" id="round2" placeholder="1-10" min="1" max="10">
-      <label> teams qualify</label><br>
-      <label>Round 3: Top </label>
-      <input type="number" id="round3" placeholder="1-10" min="1" max="10">
-      <label> teams qualify</label><br>
+    <div class="rules">
+      <h2>Tournament Rules</h2>
+      <textarea id="tournamentRules" placeholder="Enter tournament rules here..."></textarea>
       <button onclick="saveRules()">Save Rules</button>
     </div>
     <div>
-      <h2>Match Setup</h2>
+      <h2>Match Schedule</h2>
       <select id="team1"></select>
       <select id="team2"></select>
+      <input type="datetime-local" id="matchTime">
       <button onclick="createMatch()">Create Match</button>
     </div>
-    <div class="leaderboard" id="leaderboard"></div>
+    <div class="matches" id="matches"></div>
   </div>
   <script>
     const JSONBIN_API_KEY = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK';
-    const JSONBIN_BIN_ID = '67d37c4e8561e97a50eb898e';
+    const JSONBIN_BIN_ID = '67d37f4e8a456b7966755d9e';
     let teams = [];
     let matches = [];
-    let rules = { round1: 0, round2: 0, round3: 0 };
+    let rules = '';
 
     async function fetchData() {
       const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
@@ -58,7 +112,8 @@
       const data = await response.json();
       teams = data.record.teams || [];
       matches = data.record.matches || [];
-      rules = data.record.rules || { round1: 0, round2: 0, round3: 0 };
+      rules = data.record.rules || '';
+      document.getElementById('tournamentRules').value = rules;
       renderTeams();
       renderMatches();
     }
@@ -82,18 +137,59 @@
       }
     }
 
+    function editTeam(index) {
+      const team = teams[index];
+      const newName = prompt("Enter new team name:", team.name);
+      const newPlayerCount = prompt("Enter new number of players (1-5):", team.players.length);
+      if (newName && newPlayerCount >= 1 && newPlayerCount <= 5) {
+        team.name = newName;
+        team.players = Array(parseInt(newPlayerCount)).fill('Player');
+        renderTeams();
+        saveData();
+      }
+    }
+
+    function deleteTeam(index) {
+      if (confirm("Are you sure you want to delete this team?")) {
+        teams.splice(index, 1);
+        renderTeams();
+        saveData();
+      }
+    }
+
     function saveRules() {
-      rules.round1 = parseInt(document.getElementById('round1').value);
-      rules.round2 = parseInt(document.getElementById('round2').value);
-      rules.round3 = parseInt(document.getElementById('round3').value);
+      rules = document.getElementById('tournamentRules').value;
       saveData();
     }
 
     function createMatch() {
       const team1 = document.getElementById('team1').value;
       const team2 = document.getElementById('team2').value;
-      if (team1 && team2) {
-        matches.push({ team1, team2, result: null });
+      const matchTime = document.getElementById('matchTime').value;
+      if (team1 && team2 && matchTime) {
+        matches.push({ team1, team2, time: matchTime, result: null });
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function editMatch(index) {
+      const match = matches[index];
+      const newTeam1 = prompt("Enter new Team 1:", match.team1);
+      const newTeam2 = prompt("Enter new Team 2:", match.team2);
+      const newTime = prompt("Enter new match time (YYYY-MM-DDTHH:MM):", match.time);
+      if (newTeam1 && newTeam2 && newTime) {
+        match.team1 = newTeam1;
+        match.team2 = newTeam2;
+        match.time = newTime;
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function deleteMatch(index) {
+      if (confirm("Are you sure you want to delete this match?")) {
+        matches.splice(index, 1);
         renderMatches();
         saveData();
       }
@@ -101,10 +197,12 @@
 
     function renderTeams() {
       const teamsDiv = document.getElementById('teams');
-      teamsDiv.innerHTML = teams.map(team => `
+      teamsDiv.innerHTML = teams.map((team, index) => `
         <div class="team">
           <strong>${team.name}</strong> - Kills: ${team.kills}
           ${team.players.map((player, i) => `<div>Player ${i + 1}: ${player}</div>`).join('')}
+          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
         </div>
       `).join('');
     }
@@ -114,6 +212,14 @@
       const team2Select = document.getElementById('team2');
       team1Select.innerHTML = teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
       team2Select.innerHTML = teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = matches.map((match, index) => `
+        <div class="match">
+          <strong>${match.team1}</strong> vs <strong>${match.team2}</strong> at ${new Date(match.time).toLocaleString()}
+          <button class="edit-btn" onclick="editMatch(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+        </div>
+      `).join('');
     }
 
     fetchData();
