@@ -5,133 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Battle Royale Tournament Manager</title>
   <style>
+    /* Admin App CSS Styles */
     body {
-  font-family: 'Arial', sans-serif;
-  background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-h1 {
-  text-align: center;
-  font-size: 2.5rem;
-  color: #ffcc00;
-  text-shadow: 2px 2px 4px #000;
-}
-
-input, select, button, textarea {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-button {
-  background: #ff5722;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-button:hover {
-  background: #e64a19;
-}
-
-.teams, .matches, .rules, .points-settings, .announcements {
-  margin-top: 20px;
-}
-
-.team, .match, .rule, .points-setting, .announcement {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 5px;
-  position: relative;
-}
-
-.edit-btn, .delete-btn, .end-match-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px 10px;
-  font-size: 0.9rem;
-}
-
-.edit-btn {
-  background: #4CAF50;
-  right: 80px;
-}
-
-.edit-btn:hover {
-  background: #45a049;
-}
-
-.delete-btn {
-  background: #f44336;
-}
-
-.delete-btn:hover {
-  background: #d32f2f;
-}
-
-.end-match-btn {
-  background: #2196F3;
-  right: 150px;
-}
-
-.end-match-btn:hover {
-  background: #1976D2;
-}
-
-select[multiple] {
-  height: 150px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th, td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-th {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.toggle-buttons {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.toggle-buttons button {
-  margin: 5px;
-  background: #555;
-}
-
-.toggle-buttons button.active {
-  background: #ff5722;
-}
-
-.hidden {
-  display: none;
-}
+      font-family: 'Arial', sans-serif;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      color: #ffcc00;
+      text-shadow: 2px 2px 4px #000;
+    }
+    input, select, button, textarea {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button {
+      background: #ff5722;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #e64a19;
+    }
+    .teams, .matches, .rules, .points-settings, .announcements {
+      margin-top: 20px;
+    }
+    .team, .match, .rule, .points-setting, .announcement {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      position: relative;
+    }
+    .edit-btn, .delete-btn, .end-match-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+    }
+    .edit-btn {
+      background: #4CAF50;
+      right: 80px;
+    }
+    .edit-btn:hover {
+      background: #45a049;
+    }
+    .delete-btn {
+      background: #f44336;
+    }
+    .delete-btn:hover {
+      background: #d32f2f;
+    }
+    .end-match-btn {
+      background: #2196F3;
+      right: 150px;
+    }
+    .end-match-btn:hover {
+      background: #1976D2;
+    }
+    select[multiple] {
+      height: 150px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    th {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .toggle-buttons {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .toggle-buttons button {
+      margin: 5px;
+      background: #555;
+    }
+    .toggle-buttons button.active {
+      background: #ff5722;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -223,6 +202,51 @@ th {
       saveData();
     }
 
+    function addTeam() {
+      const teamName = document.getElementById('teamName').value;
+      const playerCount = parseInt(document.getElementById('playerCount').value);
+      if (teamName && playerCount) {
+        const players = [];
+        for (let i = 1; i <= playerCount; i++) {
+          const playerName = prompt(`Enter name for Player ${i}:`);
+          players.push(playerName || `Player ${i}`);
+        }
+        data.teams.push({ name: teamName, players, kills: 0, totalPoints: 0, rankPoints: 0, killPoints: 0 });
+        renderTeams();
+        renderTeamOptions();
+        saveData();
+      }
+    }
+
+    function deleteTeam(index) {
+      if (confirm("Are you sure you want to delete this team?")) {
+        data.teams.splice(index, 1);
+        renderTeams();
+        renderTeamOptions();
+        saveData();
+      }
+    }
+
+    function editTeam(index) {
+      const team = data.teams[index];
+      const newName = prompt("Enter new team name:", team.name);
+      if (newName) {
+        team.name = newName;
+        const newPlayerCount = parseInt(prompt("Enter new number of players (1-5):", team.players.length));
+        if (newPlayerCount >= 1 && newPlayerCount <= 5) {
+          const players = [];
+          for (let i = 1; i <= newPlayerCount; i++) {
+            const playerName = prompt(`Enter name for Player ${i}:`, team.players[i - 1] || `Player ${i}`);
+            players.push(playerName || `Player ${i}`);
+          }
+          team.players = players;
+        }
+        renderTeams();
+        renderTeamOptions();
+        saveData();
+      }
+    }
+
     function renderAll() {
       renderTeams();
       renderMatches();
@@ -230,9 +254,201 @@ th {
       renderRules();
     }
 
-    // Add other functions (addTeam, deleteTeam, editTeam, etc.) here
+    function renderTeams() {
+      const teamsDiv = document.getElementById('teams');
+      teamsDiv.innerHTML = data.teams.map((team, index) => `
+        <div class="team">
+          <strong>${team.name}</strong> - Total Points: ${team.totalPoints} (Rank Points: ${team.rankPoints}, Kill Points: ${team.killPoints})
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Kills</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${team.players.map((player, i) => `
+                <tr>
+                  <td>${player}</td>
+                  <td>${team.kills}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
+        </div>
+      `).join('');
+    }
 
-    fetchData();
-  </script>
-</body>
-</html>
+    function renderTeamOptions() {
+      const matchTeamsSelect = document.getElementById('matchTeams');
+      matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
+        data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
+    }
+
+    function createMatch() {
+      const matchName = document.getElementById('matchName').value;
+      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
+        .map(option => option.value);
+      const matchTime = document.getElementById('matchTime').value;
+      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime && matchName) {
+        const teamsInMatch = selectedTeams.includes('all') ? data.teams.map(team => team.name) : selectedTeams;
+        data.matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null, visible: true });
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function endMatch(index) {
+      const match = data.matches[index];
+      const positions = {};
+      const kills = {};
+      for (const teamName of match.teams) {
+        const position = parseInt(prompt(`Enter position for ${teamName}:`));
+        positions[teamName] = position;
+        const teamKills = {};
+        for (const player of data.teams.find(t => t.name === teamName).players) {
+          const playerKills = parseInt(prompt(`Enter kills for ${player} (${teamName}):`));
+          teamKills[player] = playerKills;
+        }
+        kills[teamName] = teamKills;
+      }
+      match.result = { positions, kills };
+      updateLeaderboard();
+      renderMatches();
+      saveData();
+    }
+
+    function updateLeaderboard() {
+      for (const team of data.teams) {
+        team.totalPoints = 0;
+        team.rankPoints = 0;
+        team.killPoints = 0;
+        team.kills = 0;
+      }
+      for (const match of data.matches) {
+        if (match.result) {
+          for (const [teamName, position] of Object.entries(match.result.positions)) {
+            const team = data.teams.find(t => t.name === teamName);
+            team.rankPoints += data.pointsPerPosition[position - 1] || 0;
+            team.totalPoints += data.pointsPerPosition[position - 1] || 0;
+          }
+          for (const [teamName, teamKills] of Object.entries(match.result.kills)) {
+            const team = data.teams.find(t => t.name === teamName);
+            for (const [player, playerKills] of Object.entries(teamKills)) {
+              team.kills += playerKills;
+              team.killPoints += playerKills * data.pointsPerKill;
+              team.totalPoints += playerKills * data.pointsPerKill;
+            }
+          }
+        }
+      }
+      // Update ranks
+      const sortedTeams = data.teams.sort((a, b) => b.totalPoints - a.totalPoints);
+      sortedTeams.forEach((team, index) => team.rank = index + 1);
+    }
+
+    function renderMatches() {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = data.matches
+        .filter(match => match.visible)
+        .map((match, index) => `
+          <div class="match">
+            <strong>Match Name:</strong> ${match.name}<br>
+            <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+            <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
+            ${match.result ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Position</th>
+                    <th>Kills</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                    <tr>
+                      <td>${teamName}</td>
+                      <td>${position}</td>
+                      <td>${JSON.stringify(match.result.kills[teamName])}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : '<div>Match not yet ended</div>'}
+            <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+            <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+          </div>
+        `).join('');
+    }
+
+    function deleteMatch(index) {
+      if (confirm("Are you sure you want to delete this match?")) {
+        data.matches.splice(index, 1);
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function addAnnouncement() {
+      const message = document.getElementById('announcementMessage').value;
+      if (message) {
+        const timestamp = new Date().toISOString();
+        data.announcements.push({ message, timestamp, visible: true });
+        renderAnnouncements();
+        saveData();
+        document.getElementById('announcementMessage').value = ''; // Clear the input field
+      }
+    }
+
+    function editAnnouncement(index) {
+      const newMessage = prompt("Edit announcement:", data.announcements[index].message);
+      if (newMessage) {
+        data.announcements[index].message = newMessage;
+        data.announcements[index].timestamp = new Date().toISOString(); // Update timestamp
+        renderAnnouncements();
+        saveData();
+      }
+    }
+
+    function deleteAnnouncement(index) {
+      if (confirm("Are you sure you want to delete this announcement?")) {
+        data.announcements.splice(index, 1);
+        renderAnnouncements();
+        saveData();
+      }
+    }
+
+    function renderAnnouncements() {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = data.announcements
+        .filter(announcement => announcement.visible)
+        .map((announcement, index) => `
+          <div class="announcement">
+            <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+            ${announcement.message}
+            <button class="edit-btn" onclick="editAnnouncement(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteAnnouncement(${index})">Delete</button>
+          </div>
+        `).join('');
+    }
+
+    function renderRules() {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      if (data.rules.visible) {
+        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+      } else {
+        rulesDisplay.innerHTML = '';
+      }
+    }
+
+    function saveRules() {
+      data.rules.content = document.getElementById('tournamentRules').value;
+      saveData();
+    }
+
+    function savePointsSettings() {
+      data.pointsPerKill = parseInt(document.getElementById('pointsPerKill').value);
+      data.pointsPerPosition = document.getElementById
