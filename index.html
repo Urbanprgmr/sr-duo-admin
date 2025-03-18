@@ -452,3 +452,13 @@
     function savePointsSettings() {
       data.pointsPerKill = parseInt(document.getElementById('pointsPerKill').value);
       data.pointsPerPosition = document.getElementById
+      data.pointsPerPosition = document.getElementById('pointsPerPosition').value
+        .split(',')
+        .map(point => parseInt(point.trim()));
+      saveData();
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
