@@ -5,7 +5,133 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Battle Royale Tournament Manager</title>
   <style>
-    /* Add your CSS styles here */
+    body {
+  font-family: 'Arial', sans-serif;
+  background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #ffcc00;
+  text-shadow: 2px 2px 4px #000;
+}
+
+input, select, button, textarea {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+button {
+  background: #ff5722;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #e64a19;
+}
+
+.teams, .matches, .rules, .points-settings, .announcements {
+  margin-top: 20px;
+}
+
+.team, .match, .rule, .points-setting, .announcement {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  position: relative;
+}
+
+.edit-btn, .delete-btn, .end-match-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.edit-btn {
+  background: #4CAF50;
+  right: 80px;
+}
+
+.edit-btn:hover {
+  background: #45a049;
+}
+
+.delete-btn {
+  background: #f44336;
+}
+
+.delete-btn:hover {
+  background: #d32f2f;
+}
+
+.end-match-btn {
+  background: #2196F3;
+  right: 150px;
+}
+
+.end-match-btn:hover {
+  background: #1976D2;
+}
+
+select[multiple] {
+  height: 150px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+th {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toggle-buttons {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.toggle-buttons button {
+  margin: 5px;
+  background: #555;
+}
+
+.toggle-buttons button.active {
+  background: #ff5722;
+}
+
+.hidden {
+  display: none;
+}
   </style>
 </head>
 <body>
