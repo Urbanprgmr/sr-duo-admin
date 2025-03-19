@@ -173,20 +173,30 @@
     };
 
     async function fetchData() {
-      const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-        headers: { 'X-Master-Key': JSONBIN_API_KEY }
-      });
-      const json = await response.json();
-      if (json.record) data = json.record;
-      renderAll();
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        const json = await response.json();
+        if (json.record) {
+          data = json.record;
+          renderAll();
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
 
     async function saveData() {
-      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-        body: JSON.stringify(data)
-      });
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify(data)
+        });
+      } catch (error) {
+        console.error("Error saving data:", error);
+      }
     }
 
     function toggleSection(section) {
@@ -207,7 +217,136 @@
       saveData();
     }
 
-    // Add other functions (addTeam, deleteTeam, editTeam, etc.) here
+    function addTeam() {
+      const teamName = document.getElementById('teamName').value;
+      const playerCount = parseInt(document.getElementById('playerCount').value);
+      if (teamName && playerCount) {
+        const players = [];
+        for (let i = 1; i <= playerCount; i++) {
+          const playerName = prompt(`Enter name for Player ${i}:`);
+          players.push(playerName || `Player ${i}`);
+        }
+        data.teams.push({ name: teamName, players, kills: 0, totalPoints: 0, rankPoints: 0, killPoints: 0 });
+        renderTeams();
+        renderTeamOptions();
+        saveData();
+      }
+    }
+
+    function saveRules() {
+      data.rules.content = document.getElementById('tournamentRules').value;
+      saveData();
+    }
+
+    function addAnnouncement() {
+      const message = document.getElementById('announcementMessage').value;
+      if (message) {
+        const timestamp = new Date().toISOString();
+        data.announcements.push({ message, timestamp, visible: true });
+        renderAnnouncements();
+        saveData();
+        document.getElementById('announcementMessage').value = ''; // Clear the input field
+      }
+    }
+
+    function renderAll() {
+      renderTeams();
+      renderMatches();
+      renderAnnouncements();
+      renderRules();
+      renderTeamOptions();
+    }
+
+    function renderTeams() {
+      const teamsDiv = document.getElementById('teams');
+      teamsDiv.innerHTML = data.teams.map((team, index) => `
+        <div class="team">
+          <strong>${team.name}</strong> - Total Points: ${team.totalPoints} (Rank Points: ${team.rankPoints}, Kill Points: ${team.killPoints})
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Kills</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${team.players.map((player, i) => `
+                <tr>
+                  <td>${player}</td>
+                  <td>${team.kills}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    function renderTeamOptions() {
+      const matchTeamsSelect = document.getElementById('matchTeams');
+      matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
+        data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
+    }
+
+    function renderMatches() {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = data.matches
+        .filter(match => match.visible)
+        .map((match, index) => `
+          <div class="match">
+            <strong>Match Name:</strong> ${match.name}<br>
+            <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+            <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
+            ${match.result ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Position</th>
+                    <th>Kills</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                    <tr>
+                      <td>${teamName}</td>
+                      <td>${position}</td>
+                      <td>${JSON.stringify(match.result.kills[teamName])}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : '<div>Match not yet ended</div>'}
+            <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+            <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+          </div>
+        `).join('');
+    }
+
+    function renderAnnouncements() {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = data.announcements
+        .filter(announcement => announcement.visible)
+        .map((announcement, index) => `
+          <div class="announcement">
+            <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+            ${announcement.message}
+            <button class="edit-btn" onclick="editAnnouncement(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteAnnouncement(${index})">Delete</button>
+          </div>
+        `).join('');
+    }
+
+    function renderRules() {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      if (data.rules.visible) {
+        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+      } else {
+        rulesDisplay.innerHTML = '';
+      }
+    }
 
     fetchData();
   </script>
