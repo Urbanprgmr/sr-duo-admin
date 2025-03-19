@@ -296,6 +296,76 @@
       }
     }
 
+    function createMatch() {
+      const matchName = document.getElementById('matchName').value;
+      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
+        .map(option => option.value);
+      const matchTime = document.getElementById('matchTime').value;
+      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime && matchName) {
+        const teamsInMatch = selectedTeams.includes('all') ? data.teams.map(team => team.name) : selectedTeams;
+        data.matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null, visible: true });
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function endMatch(index) {
+      const match = data.matches[index];
+      const positions = {};
+      const kills = {};
+      for (const teamName of match.teams) {
+        const position = parseInt(prompt(`Enter position for ${teamName}:`));
+        positions[teamName] = position;
+        const teamKills = {};
+        for (const player of data.teams.find(t => t.name === teamName).players) {
+          const playerKills = parseInt(prompt(`Enter kills for ${player} (${teamName}):`));
+          teamKills[player] = playerKills;
+        }
+        kills[teamName] = teamKills;
+      }
+      match.result = { positions, kills };
+      updateLeaderboard();
+      renderMatches();
+      saveData();
+    }
+
+    function deleteMatch(index) {
+      if (confirm("Are you sure you want to delete this match?")) {
+        data.matches.splice(index, 1);
+        renderMatches();
+        saveData();
+      }
+    }
+
+    function updateLeaderboard() {
+      for (const team of data.teams) {
+        team.totalPoints = 0;
+        team.rankPoints = 0;
+        team.killPoints = 0;
+        team.kills = 0;
+      }
+      for (const match of data.matches) {
+        if (match.result) {
+          for (const [teamName, position] of Object.entries(match.result.positions)) {
+            const team = data.teams.find(t => t.name === teamName);
+            team.rankPoints += data.pointsPerPosition[position - 1] || 0;
+            team.totalPoints += data.pointsPerPosition[position - 1] || 0;
+          }
+          for (const [teamName, teamKills] of Object.entries(match.result.kills)) {
+            const team = data.teams.find(t => t.name === teamName);
+            for (const [player, playerKills] of Object.entries(teamKills)) {
+              team.kills += playerKills;
+              team.killPoints += playerKills * data.pointsPerKill;
+              team.totalPoints += playerKills * data.pointsPerKill;
+            }
+          }
+        }
+      }
+      // Update ranks
+      const sortedTeams = data.teams.sort((a, b) => b.totalPoints - a.totalPoints);
+      sortedTeams.forEach((team, index) => team.rank = index + 1);
+    }
+
     function renderAll() {
       renderTeams();
       renderMatches();
@@ -389,7 +459,7 @@
     function renderRules() {
       const rulesDisplay = document.getElementById('rulesDisplay');
       if (data.rules.visible) {
-        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
       } else {
         rulesDisplay.innerHTML = '';
       }
