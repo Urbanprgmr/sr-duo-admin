@@ -111,16 +111,6 @@
     .hidden {
       display: none;
     }
-    .end-match-form {
-      margin-top: 20px;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-    }
-    .end-match-form input {
-      width: 100px;
-      margin: 5px;
-    }
   </style>
 </head>
 <body>
@@ -467,7 +457,7 @@
                 </tbody>
               </table>
             ` : '<div>Match not yet ended</div>'}
-<button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+            <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
             <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
           </div>
         `).join('');
