@@ -8,7 +8,7 @@
     /* Admin App CSS Styles */
     body {
       font-family: 'Arial', sans-serif;
-      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1742499083/IMG_0361_jeevuq.jpg') no-repeat center center fixed;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       margin: 0;
@@ -110,6 +110,16 @@
     }
     .hidden {
       display: none;
+    }
+    .end-match-form {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+    }
+    .end-match-form input {
+      width: 100px;
+      margin: 5px;
     }
   </style>
 </head>
@@ -313,16 +323,39 @@
       const match = data.matches[index];
       const positions = {};
       const kills = {};
-      for (const teamName of match.teams) {
-        const position = parseInt(prompt(`Enter position for ${teamName}:`));
+
+      // Create a form for entering positions and kills
+      const form = document.createElement('div');
+      form.className = 'end-match-form';
+      form.innerHTML = `
+        <h3>Enter Match Results for ${match.name}</h3>
+        ${match.teams.map(teamName => `
+          <div>
+            <strong>${teamName}</strong>
+            <input type="number" id="position-${teamName}" placeholder="Position" min="1" max="${match.teams.length}">
+            <input type="number" id="kills-${teamName}" placeholder="Total Kills">
+          </div>
+        `).join('')}
+        <button onclick="saveMatchResults(${index})">Save Results</button>
+      `;
+
+      // Append the form to the match details
+      const matchDiv = document.querySelector(`.match:nth-child(${index + 1})`);
+      matchDiv.appendChild(form);
+    }
+
+    function saveMatchResults(index) {
+      const match = data.matches[index];
+      const positions = {};
+      const kills = {};
+
+      match.teams.forEach(teamName => {
+        const position = parseInt(document.getElementById(`position-${teamName}`).value);
+        const teamKills = parseInt(document.getElementById(`kills-${teamName}`).value);
         positions[teamName] = position;
-        const teamKills = {};
-        for (const player of data.teams.find(t => t.name === teamName).players) {
-          const playerKills = parseInt(prompt(`Enter kills for ${player} (${teamName}):`));
-          teamKills[player] = playerKills;
-        }
         kills[teamName] = teamKills;
-      }
+      });
+
       match.result = { positions, kills };
       updateLeaderboard();
       renderMatches();
@@ -353,11 +386,9 @@
           }
           for (const [teamName, teamKills] of Object.entries(match.result.kills)) {
             const team = data.teams.find(t => t.name === teamName);
-            for (const [player, playerKills] of Object.entries(teamKills)) {
-              team.kills += playerKills;
-              team.killPoints += playerKills * data.pointsPerKill;
-              team.totalPoints += playerKills * data.pointsPerKill;
-            }
+            team.kills += teamKills;
+            team.killPoints += teamKills * data.pointsPerKill;
+            team.totalPoints += teamKills * data.pointsPerKill;
           }
         }
       }
@@ -430,13 +461,13 @@
                     <tr>
                       <td>${teamName}</td>
                       <td>${position}</td>
-                      <td>${JSON.stringify(match.result.kills[teamName])}</td>
+                      <td>${match.result.kills[teamName]}</td>
                     </tr>
                   `).join('')}
                 </tbody>
               </table>
             ` : '<div>Match not yet ended</div>'}
-            <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+<button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
             <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
           </div>
         `).join('');
@@ -459,7 +490,7 @@
     function renderRules() {
       const rulesDisplay = document.getElementById('rulesDisplay');
       if (data.rules.visible) {
-rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
       } else {
         rulesDisplay.innerHTML = '';
       }
