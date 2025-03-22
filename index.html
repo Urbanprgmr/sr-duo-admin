@@ -182,7 +182,10 @@
         const json = await response.json();
         if (json.record) {
           data = json.record;
+          console.log("Fetched data:", data); // Log fetched data for debugging
           renderAll();
+        } else {
+          console.error("No data found in JSON bin.");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -197,6 +200,7 @@
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
           body: JSON.stringify(data)
         });
+        console.log("Data saved successfully."); // Log successful save
       } catch (error) {
         console.error("Error saving data:", error);
       }
@@ -205,10 +209,46 @@
     // Sort teams by name (Team-1, Team-2, ..., Team-19)
     function sortTeams() {
       data.teams.sort((a, b) => {
-        const teamNumberA = parseInt(a.name.split('-')[1]); // Extract number from "Team-X"
-        const teamNumberB = parseInt(b.name.split('-')[1]); // Extract number from "Team-X"
+        const teamNumberA = parseInt(a.name.split('-')[1]) || 0; // Handle invalid names
+        const teamNumberB = parseInt(b.name.split('-')[1]) || 0; // Handle invalid names
         return teamNumberA - teamNumberB; // Sort in ascending order
       });
+    }
+
+    // Render all sections
+    function renderAll() {
+      console.log("Rendering all sections..."); // Log rendering process
+      renderTeams();
+      renderMatches();
+      renderAnnouncements();
+      renderRules();
+      renderTeamOptions();
+    }
+
+    // Render teams
+    function renderTeams() {
+      const teamsDiv = document.getElementById('teams');
+      teamsDiv.innerHTML = data.teams.map((team, index) => `
+        <div class="team">
+          <strong>${team.name}</strong>
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${team.players.map(player => `
+                <tr>
+                  <td>${player}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <button class="edit-btn" onclick="editTeam(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteTeam(${index})">Delete</button>
+        </div>
+      `).join('');
     }
 
     // Render team options for match creation
@@ -217,32 +257,6 @@
       sortTeams(); // Sort teams before rendering
       matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
         data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
-    }
-
-    // Add a new team
-    function addTeam() {
-      const teamName = document.getElementById('teamName').value;
-      const playerCount = parseInt(document.getElementById('playerCount').value);
-      if (teamName && playerCount) {
-        const players = [];
-        for (let i = 1; i <= playerCount; i++) {
-          const playerName = prompt(`Enter name for Player ${i}:`);
-          players.push(playerName || `Player ${i}`);
-        }
-        data.teams.push({ name: teamName, players });
-        renderTeams();
-        renderTeamOptions();
-        saveData();
-      }
-    }
-
-    // Render all sections
-    function renderAll() {
-      renderTeams();
-      renderMatches();
-      renderAnnouncements();
-      renderRules();
-      renderTeamOptions();
     }
 
     // Initialize the app
