@@ -97,31 +97,11 @@
     th {
       background: rgba(255, 255, 255, 0.2);
     }
-    .toggle-buttons {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .toggle-buttons button {
-      margin: 5px;
-      background: #555;
-    }
-    .toggle-buttons button.active {
-      background: #ff5722;
-    }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Battle Royale Tournament Manager</h1>
-    <div class="toggle-buttons">
-      <button onclick="toggleSection('rules')">Toggle Rules</button>
-      <button onclick="toggleSection('matches')">Toggle Matches</button>
-      <button onclick="toggleSection('announcements')">Toggle Announcements</button>
-      <button onclick="toggleSection('playerLeaderboard')">Toggle Player Leaderboard</button>
-    </div>
     <div id="addTeamSection">
       <h2>Add Team</h2>
       <input type="text" id="teamName" placeholder="Enter Team Name">
@@ -251,12 +231,83 @@
       `).join('');
     }
 
+    // Render matches
+    function renderMatches() {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = data.matches.map((match, index) => `
+        <div class="match">
+          <strong>Match Name:</strong> ${match.name}<br>
+          <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+          <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
+          ${match.result ? `
+            <table>
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Position</th>
+                  <th>Kills</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                  <tr>
+                    <td>${teamName}</td>
+                    <td>${position}</td>
+                    <td>${match.result.kills[teamName]}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : '<div>Match not yet ended</div>'}
+          <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+          <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    // Render announcements
+    function renderAnnouncements() {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = data.announcements.map((announcement, index) => `
+        <div class="announcement">
+          <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+          ${announcement.message}
+          <button class="edit-btn" onclick="editAnnouncement(${index})">Edit</button>
+          <button class="delete-btn" onclick="deleteAnnouncement(${index})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    // Render rules
+    function renderRules() {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      if (data.rules.visible) {
+        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+      } else {
+        rulesDisplay.innerHTML = '';
+      }
+    }
+
     // Render team options for match creation
     function renderTeamOptions() {
       const matchTeamsSelect = document.getElementById('matchTeams');
       sortTeams(); // Sort teams before rendering
       matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
         data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
+    }
+
+    // Create a new match
+    function createMatch() {
+      const matchName = document.getElementById('matchName').value;
+      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
+        .map(option => option.value);
+      const matchTime = document.getElementById('matchTime').value;
+      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime && matchName) {
+        const teamsInMatch = selectedTeams.includes('all') ? data.teams.map(team => team.name) : selectedTeams;
+        data.matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null, visible: true });
+        renderMatches();
+        saveData();
+      }
     }
 
     // Initialize the app
