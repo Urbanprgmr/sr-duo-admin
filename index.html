@@ -258,11 +258,95 @@
                 `).join('')}
               </tbody>
             </table>
-          ` : '<div>Match not yet ended</div>'}
-          <button class="end-match-btn" onclick="endMatch(${index})" ${match.result ? 'disabled' : ''}>End Match</button>
+          ` : `
+            <div id="endMatchForm-${index}"></div>
+            <button class="end-match-btn" onclick="showEndMatchForm(${index})">End Match</button>
+          `}
           <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
         </div>
       `).join('');
+    }
+
+    // Show end match form
+    function showEndMatchForm(matchIndex) {
+      const match = data.matches[matchIndex];
+      const form = document.getElementById(`endMatchForm-${matchIndex}`);
+      form.innerHTML = `
+        <h3>Enter Match Results for ${match.name}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Position</th>
+              <th>Kills</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${match.teams.map(teamName => `
+              <tr>
+                <td>${teamName}</td>
+                <td><input type="number" id="position-${teamName}" placeholder="Position" min="1" max="${match.teams.length}"></td>
+                <td><input type="number" id="kills-${teamName}" placeholder="Kills"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <button onclick="saveMatchResults(${matchIndex})">Save Results</button>
+      `;
+    }
+
+    // Save match results
+    function saveMatchResults(matchIndex) {
+      const match = data.matches[matchIndex];
+      const positions = {};
+      const kills = {};
+
+      match.teams.forEach(teamName => {
+        const position = parseInt(document.getElementById(`position-${teamName}`).value);
+        const teamKills = parseInt(document.getElementById(`kills-${teamName}`).value);
+        positions[teamName] = position;
+        kills[teamName] = teamKills;
+      });
+
+      match.result = { positions, kills };
+      updateLeaderboard();
+      renderMatches();
+      saveData();
+    }
+
+    // Update leaderboard based on match results
+    function updateLeaderboard() {
+      data.teams.forEach(team => {
+        team.totalPoints = 0;
+        team.rankPoints = 0;
+        team.killPoints = 0;
+        team.kills = 0;
+      });
+
+      data.matches.forEach(match => {
+        if (match.result) {
+          Object.entries(match.result.positions).forEach(([teamName, position]) => {
+            const team = data.teams.find(t => t.name === teamName);
+            if (team) {
+              team.rankPoints += data.pointsPerPosition[position - 1] || 0;
+              team.totalPoints += data.pointsPerPosition[position - 1] || 0;
+            }
+          });
+
+          Object.entries(match.result.kills).forEach(([teamName, teamKills]) => {
+            const team = data.teams.find(t => t.name === teamName);
+            if (team) {
+              team.kills += teamKills;
+              team.killPoints += teamKills * data.pointsPerKill;
+              team.totalPoints += teamKills * data.pointsPerKill;
+            }
+          });
+        }
+      });
+
+      // Update ranks
+      const sortedTeams = data.teams.sort((a, b) => b.totalPoints - a.totalPoints);
+      sortedTeams.forEach((team, index) => team.rank = index + 1);
     }
 
     // Render announcements
@@ -294,20 +378,6 @@
       sortTeams(); // Sort teams before rendering
       matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
         data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
-    }
-
-    // Create a new match
-    function createMatch() {
-      const matchName = document.getElementById('matchName').value;
-      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
-        .map(option => option.value);
-      const matchTime = document.getElementById('matchTime').value;
-      if ((selectedTeams.includes('all') || selectedTeams.length > 0) && matchTime && matchName) {
-        const teamsInMatch = selectedTeams.includes('all') ? data.teams.map(team => team.name) : selectedTeams;
-        data.matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null, visible: true });
-        renderMatches();
-        saveData();
-      }
     }
 
     // Initialize the app
