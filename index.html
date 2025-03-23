@@ -97,18 +97,25 @@
     th {
       background: rgba(255, 255, 255, 0.2);
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Battle Royale Tournament Manager</h1>
+    <div class="toggle-buttons">
+      <button onclick="toggleSection('teams')">View Teams</button>
+      <button onclick="toggleSection('matches')">View Matches</button>
+    </div>
     <div id="addTeamSection">
       <h2>Add Team</h2>
       <input type="text" id="teamName" placeholder="Enter Team Name">
       <input type="number" id="playerCount" placeholder="Number of Players (1-5)" min="1" max="5">
       <button onclick="addTeam()">Add Team</button>
     </div>
-    <div class="teams" id="teams"></div>
+    <div class="teams hidden" id="teams"></div>
     <div class="rules" id="rulesSection">
       <h2>Tournament Rules</h2>
       <textarea id="tournamentRules" placeholder="Enter tournament rules here..."></textarea>
@@ -131,7 +138,7 @@
       <input type="datetime-local" id="matchTime">
       <button onclick="createMatch()">Create Match</button>
     </div>
-    <div class="matches" id="matches"></div>
+    <div class="matches hidden" id="matches"></div>
     <div class="announcements" id="announcementsSection">
       <h2>Announcements</h2>
       <textarea id="announcementMessage" placeholder="Enter announcement..."></textarea>
@@ -195,6 +202,20 @@
       });
     }
 
+    // Toggle visibility of sections
+    function toggleSection(section) {
+      const teamsDiv = document.getElementById('teams');
+      const matchesDiv = document.getElementById('matches');
+
+      if (section === 'teams') {
+        teamsDiv.classList.toggle('hidden');
+        matchesDiv.classList.add('hidden');
+      } else if (section === 'matches') {
+        matchesDiv.classList.toggle('hidden');
+        teamsDiv.classList.add('hidden');
+      }
+    }
+
     // Render all sections
     function renderAll() {
       console.log("Rendering all sections..."); // Log rendering process
@@ -239,32 +260,41 @@
           <strong>Match Name:</strong> ${match.name}<br>
           <strong>Teams:</strong> ${match.teams.join(', ')}<br>
           <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
-          ${match.result ? `
-            <table>
-              <thead>
-                <tr>
-                  <th>Team</th>
-                  <th>Position</th>
-                  <th>Kills</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${Object.entries(match.result.positions).map(([teamName, position]) => `
-                  <tr>
-                    <td>${teamName}</td>
-                    <td>${position}</td>
-                    <td>${match.result.kills[teamName]}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          ` : `
-            <div id="endMatchForm-${index}"></div>
-            <button class="end-match-btn" onclick="showEndMatchForm(${index})">End Match</button>
-          `}
+          <button class="view-match-btn" onclick="viewMatchDetails(${index})">View Details</button>
           <button class="delete-btn" onclick="deleteMatch(${index})">Delete</button>
+          <div id="matchDetails-${index}" class="hidden">
+            ${match.result ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Position</th>
+                    <th>Kills</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                    <tr>
+                      <td>${teamName}</td>
+                      <td>${position}</td>
+                      <td>${match.result.kills[teamName]}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : `
+              <div id="endMatchForm-${index}"></div>
+              <button class="end-match-btn" onclick="showEndMatchForm(${index})">End Match</button>
+            `}
+          </div>
         </div>
       `).join('');
+    }
+
+    // View match details
+    function viewMatchDetails(matchIndex) {
+      const matchDetailsDiv = document.getElementById(`matchDetails-${matchIndex}`);
+      matchDetailsDiv.classList.toggle('hidden');
     }
 
     // Show end match form
@@ -378,6 +408,29 @@
       sortTeams(); // Sort teams before rendering
       matchTeamsSelect.innerHTML = `<option value="all">Select All Teams</option>` +
         data.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
+    }
+
+    // Create a new match
+    function createMatch() {
+      const matchName = document.getElementById('matchName').value;
+      const selectedTeams = Array.from(document.getElementById('matchTeams').selectedOptions)
+        .map(option => option.value);
+      const matchTime = document.getElementById('matchTime').value;
+
+      if (!matchName || !matchTime || selectedTeams.length === 0) {
+        alert("Please fill in all fields and select at least one team.");
+        return;
+      }
+
+      const teamsInMatch = selectedTeams.includes('all') ? data.teams.map(team => team.name) : selectedTeams;
+      data.matches.push({ name: matchName, teams: teamsInMatch, time: matchTime, result: null, visible: true });
+      renderMatches();
+      saveData();
+
+      // Clear the form
+      document.getElementById('matchName').value = '';
+      document.getElementById('matchTeams').selectedIndex = -1;
+      document.getElementById('matchTime').value = '';
     }
 
     // Initialize the app
